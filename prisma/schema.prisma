@@ -1,0 +1,62 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("POSTGRES_PRISMA_URL") // usa pooling de conexão
+//   directUrl = env("POSTGRES_URL_NON_POOLING") // usa uma conexão direta
+// }
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Livro {
+  id          Int       @id @default(autoincrement())
+  titulo      String
+  autor       String
+  descricao   String?
+  categoria   Categoria @relation(fields: [categoriaId], references: [id])
+  categoriaId Int
+  editora     Editora   @relation(fields: [editoraId], references: [id])
+  editoraId   Int
+  preco       Float
+  estoque     Int
+  vendas      Venda[]   // Definindo a relação de vendas
+}
+
+model Categoria {
+  id     Int     @id @default(autoincrement())
+  nome   String
+  livros Livro[]
+}
+
+model Editora {
+  id     Int     @id @default(autoincrement())
+  nome   String
+  livros Livro[]
+}
+
+model Cliente {
+  id      Int      @id @default(autoincrement())
+  nome    String
+  email   String   @unique
+  vendas  Venda[]  // Definindo a relação de vendas
+}
+
+model Venda {
+  id         Int      @id @default(autoincrement())
+  data       DateTime @default(now())
+  cliente    Cliente  @relation(fields: [clienteId], references: [id])
+  clienteId  Int
+  livro      Livro    @relation(fields: [livroId], references: [id])
+  livroId    Int
+  quantidade Int
+  valorTotal Float
+
+  @@index([clienteId], name: "clienteId")
+  @@index([livroId], name: "livroId")
+}
